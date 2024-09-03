@@ -1,0 +1,58 @@
+{
+  "name": "alx-files_manager",
+  "version": "1.0.0",
+  "description": "0x04. Files manager - A backend application for managing file uploads, with features including authentication, pagination, and background processing using Node.js, Express, MongoDB, Redis, and Bull.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "mocha --require @babel/register --exit",
+    "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "Amos Shikoli, Collins Oloo",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "bull": "^4.16.1",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mime-types": "^2.1.35",
+    "mongoose": "^8.6.0",
+    "multer": "^1.4.5-lts.1",
+    "redis": "^4.7.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.21.0",
+    "@babel/preset-env": "^7.25.4",
+    "babel-cli": "^6.26.0",
+    "chai": "^5.1.1",
+    "eslint": "^9.9.1",
+    "mocha": "^10.7.3",
+    "nodemon": "^3.1.4"
+  },
+  "babel": {
+    "presets": ["@babel/preset-env"]
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true,
+      "mocha": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:node/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 12,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-console": "off",
+      "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    }
+  }
+}
