@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "0x04. Files manager - A backend application for managing file uploads, with features including authentication, pagination, and background processing using Node.js, Express, MongoDB, Redis, and Bull.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
