@@ -1,48 +1,46 @@
+
 import sha1 from 'sha1';
+import { ObjectId } from 'mongodb';
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
+import { userQueue } from '../worker';
 
-export default class UsersController {
+class UsersController {
   static async postNew(req, res) {
-    try {
-      const email = req.body ? req.body.email : null;
-      const password = req.body ? req.body.password : null;
+    const { email, password } = req.body;
 
-      if (!email) {
-        return res.status(400).json({ error: 'Missing email' });
-      }
-      if (!password) {
-        return res.status(400).json({ error: 'Missing password' });
-      }
-
-      const user = await (await dbClient.usersCollection()).findOne({ email });
-
-      if (user) {
-        return res.status(400).json({ error: 'Already exist' });
-      }
-
-      const insertionInfo = await (await dbClient.usersCollection())
-        .insertOne({ email, password: sha1(password) });
-      const userId = insertionInfo.insertedId.toString();
-
-      // Here, you would handle the email sending or any other background task without using a queue.
-      // This is just an example of how you might log that the user was added.
-
-      console.log(`New user created with ID: ${userId}. Email sending can be handled here.`);
-
-      return res.status(201).json({ email, id: userId });
-    } catch (error) {
-      console.error('Error creating user:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+    if (!email) {
+      return res.status(400).json({ error: 'Missing email' });
     }
+    if (!password) {
+      return res.status(400).json({ error: 'Missing password' });
+    }
+
+    const userExists = await dbClient.dbClient.collection('users').findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ error: 'Already exist' });
+    }
+
+    const hashedPassword = sha1(password);
+
+    const result = await dbClient.dbClient.collection('users').insertOne({ email, password: hashedPassword });
+    userQueue.add({ userId: result.insertedId });
+    return res.status(201).json({ id: result.insertedId, email });
   }
 
   static async getMe(req, res) {
-    try {
-      const { user } = req;
-      return res.status(200).json({ email: user.email, id: user._id.toString() });
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
+    const token = req.header('X-Token');
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const users = await dbClient.dbClient.collection('users');
+    const ObjId = new ObjectId(userId);
+
+    const user = await users.findOne({ _id: ObjId });
+    if (user) return res.status(200).json({ id: userId, email: user.email });
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 }
+
+export default UsersController;
